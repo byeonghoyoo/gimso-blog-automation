@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>👀 블로그 AI 도우미_Ver1.6</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="docx.min.js"></script>
+    <script src="popup.js" defer></script>
+</head>
+<body>
+    <h3>👀 블로그 AI 도우미_Ver1.6</h3>
+    <div id="notification" style="padding:10px; background:#ffeb3b; border-radius:5px; text-align:center;">
+        🔔 알람 불러오는 중...
+    </div>
+
+    <button id="fetchBlogContent" class="btn-4"><span>🔍 현재 블로그 글 가져오기</span></button>
+    
+    <!-- ✅ 언어 모델 선택 및 API 키 입력 -->
+    <label for="modelSelect">🕵️‍♂️ 언어 모델 선택:</label>
+    <select id="modelSelect">
+        <option value="gemini">Google Gemini (강추)</option>
+        <option value="deepseek">DeepSeek AI R1 (속도 가장 느림)</option>
+        <option value="deepseek_v3">DeepSeek AI V3 (속도 느림)</option>
+        <option value="qwen">Qwen AI (속도 느림)</option>
+        <option value="gpt-4o">OpenAI GPT-4o</option>
+        <option value="gpt-4o-mini">OpenAI GPT-4o Mini</option>
+        <option value="gpt-4-turbo">OpenAI GPT-4 Turbo</option>
+        <option value="gpt-3.5-turbo">OpenAI GPT-3.5 Turbo</option>
+    </select>
+
+    <label for="apiKey">🔑 API 키 입력:</label>
+
+
+    <div class="api-key-container">
+        <input type="password" id="apiKey" placeholder="API 키를 입력하세요">
+        <label class="toggle-container">
+            <input type="checkbox" id="toggleApiKey">
+            <span>👁️</span>
+        </label>
+    </div>
+
+    <button id="saveApiKeyButton" class="btn-4"><span>💾 API Key 저장</span></button>
+    <hr>
+
+    <!-- ✅ 제목 입력 필드 (수정 가능) -->
+    <label for="blogTitle">🎯 블로그 제목:</label>
+    <input type="text" id="blogTitle" placeholder="제목을 가져오세요" />
+
+    <!-- ✅ 본문 입력 필드 (수정 가능) -->
+    <label for="blogContent">📝 블로그 본문:</label>
+    <textarea id="blogContent" placeholder="블로그 본문을 가져오세요"></textarea>
+
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+    <label for="userPrompt">🎨본문 이미지 다운로드 및 세탁</label>
+    <table style="border-collapse: collapse; width: 100%; border: none;">
+        <tbody>
+            <tr>
+            <td style="width: 33%; text-align: center;">
+                <P>📥본문 이미지</P>
+                <button id="downloadImages"><span>1️⃣ 다운로드</span></button>
+            </td>
+
+            <td style="width: 33%; text-align: center;">
+                <select id="emojiSelector">
+                    <option value="">❌ 이모지 없음</option>
+                    <option value="😂">😂 웃음</option>
+                    <option value="🎉">🎉 축하</option>
+                    <option value="👍">👍 좋아요</option>
+                    <option value="🔥">🔥 핫한</option>
+                </select>
+                <button id="processImages1">2️⃣ 이모지 선택</button>
+            </td>
+
+            <td style="width: 33%; text-align: center;">
+                <input type="file" id="imageInput" accept="image/*" multiple>
+                <button id="processImages">3️⃣ 이미지 세탁</button>
+            </td>
+            </tr>
+        </tbody>
+    </table>
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+
+    <label for="userPrompt">✏️사용자 프롬프트</label>
+    <textarea id="userPrompt" placeholder="추가할 프롬프트를 입력하세요..."></textarea>
+    <h4>✅프롬프트 예시: 위 내용을 형식과 주제를 재구성하여 다시 작성해줘.</h4>
+
+    <button id="generateResponse" class="btn-6"><span>💡 AI 블로그 글 생성하기 (API)</span></button>
+
+    <h4>📜 결과 (답변 생성 10초 ~ 50초 소요)</h4>
+    <textarea id="responseOutput" placeholder="생성형 AI의 응답이 여기에 표시됩니다..."></textarea>
+
+    <table style="border-collapse: collapse; width: 100%; border: none;" data-ke-align="alignLeft" data-ke-style="style16">
+        <tbody>
+            <tr>
+            <td style="width: 50%; text-align: center;">
+                <button id="sendToChatGPT" class="btn-6"><span>💬 ChatGPT 웹사이트 질문</span></button>
+            </td>
+            <td style="width: 50%; text-align: center;">
+                <button class="btn-6"><a href="https://www.gamsgo.com/partner/QZ3J4Cva" target="_blank">👀챗GPT 할인</a></button>
+            </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+    <label><strong>🏁 사이트별 블로그 ID 저장하기</strong></label>
+    <div id="naverIdInputContainer">
+        <input type="text" id="naverIdInput" placeholder="네이버 ID 입력">
+        <button id="Naver_Save_Button">💾 네이버 ID 저장</button>
+        <label>
+            <input type="checkbox" id="showRealIdCheckbox">
+        </label>
+    </div>
+    
+    <div id="tistoryIdInputContainer">
+        <input type="text" id="tistoryIdInput" placeholder="티스토리 ID 입력">
+        <button id="Tistory_Save_Button">💾 티스토리 ID 저장</button>
+        <span>👁️</span>
+    </div>
+    
+    
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+
+    <label><strong>🔗 OpenAI 챗GPTS 목록 (최대 5개)</strong></label>
+    <select id="chatGPTDropdown">
+        <option value="" disabled selected>챗GPTS를 선택하세요</option>
+    </select>
+    <input type="text" id="chatGPTInput" placeholder="새로운 챗GPTs URL 입력">
+    <p></p>
+    <button id="saveChatGPT">💾 ChatGPTs 저장</button>
+    <button id="deleteChatGPT">🗑 ChatGPTs 삭제</button>
+    
+  
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+
+    <label><strong>🏁 AI 응답 본문 키워드 분석</strong></label>
+    <!-- ✅ 글자수 표시 영역 및 버튼 추가 -->
+    <p id="charCountWrapper">
+        💻 본문 글자수: <span id="charCount">-</span> 개
+        <button id="checkCharCount">🔍 조회</button>
+    </p>
+
+    <!-- ✅ 중복 단어 입력 필드 및 개수 표시 -->
+    <div id="duplicateWordContainer">
+        <input type="text" id="duplicateWordInput" placeholder="찾는 단어 입력">
+        <span id="duplicateCount">-</span> 개
+        <button id="checkDuplicateButton">🔍 조회</button>
+
+    </div>
+    
+    <!-- ✅ 단어 교체 입력 필드 -->
+    <div id="wordReplaceContainer">
+        <input type="text" id="findWord" placeholder="찾는 단어">
+        <input type="text" id="replaceWord" placeholder="교체할 단어">
+        <input type="number" id="replaceCount" placeholder="교체 개수" min="1">
+        <button id="replaceButton">🔄 변경</button>
+    </div>
+
+    
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+
+    <button id="saveEditedResponse" class="btn-4"><span>💾 수정 내용 저장</span></button>
+    <p></p>
+    <button id="downloadResponseDocx" class="btn-4"><span>📂 워드(Word) 문서로 열기(Naver)</span></button>
+    <p></p>
+
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+    
+    <div>
+        <button id="convertMarkdownToHTML" class="btn-5">🔄 HTML 코드로 변환 하기</button>
+        <p></p>
+        <button id="copyHTML" class="btn-5" style="display:none;">✂️ HTML 코드 복사 하기(티스토리)</button>
+    </div>
+
+    <hr contenteditable="false" data-ke-type="horizontalRule" data-ke-style="style5" />
+
+    <!-- HTML 미리보기 -->
+    <div id="htmlContainer" style="display:none;">
+        <h3>🔍 HTML 코드 미리보기</h3>
+        <div id="htmlPreview" style="border: 1px solid #ccc; padding: 10px;"></div>
+        <h3>🔄 HTML 변환 소스</h3>
+        <textarea id="htmlOutput" style="width: 100%; height: 100px;"></textarea>
+    </div>
+
+
+    
+    <div id="notification2" class="blinking-text" style="padding:10px; background:#ffffff; border-radius:5px; text-align:center;">
+    </div>
+
+    <div style="text-align: center;">
+    <button class="btn-9"><a href="https://www.youtube.com/@ai%EC%9E%90%EB%8F%99%ED%99%94" target="_blank">👀개발자 유튜브 채널: @ai자동화 복붙코딩</a></button>
+    </div>
+
+
+    <div class="separator" style="clear: both; text-align: center;">
+      <a href="https://www.gamsgo.com/partner/QZ3J4Cva" style="margin-left: 1em; margin-right: 1em;" target="_blank"><img border="0" data-original-height="1000" data-original-width="500" height="360" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEibFNJSsoOoRPH_3mmE7Waoe9f4WnhnQ402qIBQyYOmzJCdWqIaBT3lt8whSU5mQxDdYZrb2o2Hr79L3DJJrYFPo43_lA86uJP8bMam0V-SY8BrtX9PbVn1sMB-2ogAlo1MHkFo55GnrqjaCLlLAivjqyfwy0rHfqz7Kx3lRJI6ok_hs8OixOOnDnmD9VNb/s320-rw/%ED%99%95%EC%9E%A5%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%A8_%EA%B4%91%EA%B3%A0.gif" width="305" /></a>
+    </div>  
+
+    <iframe src="https://coupa.ng/chk8Yh" width="100%" height="44" frameborder="0" scrolling="no" referrerpolicy="unsafe-url"></iframe>
+    <a href="https://link.coupang.com/a/ceqmAJ" target="_blank" referrerpolicy="unsafe-url"><img height="60" width="320" src="https://ads-partners.coupang.com/banners/153407?subId=&traceId=V0-301-879dd1202e5c73b2-I153407&w=728&h=90" alt="쿠팡 바로가기"></a>
+
+    <a href='https://s.click.aliexpress.com/e/_olRoB9e?bz=300*250' target='_blank'><img width='320' height='60' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgFZ85r7VyXvQJ9oeD1NEAMM7UWNCaytqti0Ytzp5_I2LONwrYx-6gwmgJ3iVmEzzaspzMGsHY4rrbZnA10_6ok7VEHjSWZgGFE6Kauin_XfS1wYOvsZsg3nJNvyys1UcfSIuQ5iPISejdv1yDwp7nXZptE-N8QaRKBK53u3vMX6UkSkde3YnUbuF29atgZ/s320-rw/%EC%95%8C%EB%A6%AC%20%28320%20x%2060%20px%29.gif' /></a>
+    
+    <a href='https://newtip.net/click.php?m=agoda&a=A100694880&l=0000' target='_blank'><img width='320' height='60' src='https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEggf2nviC1Yjng6QeyPOZ1pbeyy_aLUf3l6UkdulzrEiTzm12CkseA7g_0vyxhVe0qPRJ4I86DqOINcsR3LV5XeFj7cVVky_WZ1dlFzbNn47XORG93skF9eFxgioWS1KSf6d_6dZKIBVYjF0iINL5WNjy5kuEcwN1o32FHM5rCvdnw0L8tK59BguBZvN-Nz/s1600-rw/%EC%A0%9C%EB%AA%A9%20%EC%97%86%EC%9D%8C%20(320%20x%2060%20px).gif' /></a>
+    <p>"이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."</p>
+
+   
+    <!-- ✅ Gemini 실행 중 모달 -->
+    <div id="geminiModal" class="modal">
+        <div class="modal-content">
+            <p class="animated-text"> 
+                <span>🤖</span><span>블</span><span>로</span><span>그</span><span> </span>
+                <span>글</span><span> </span><span>생</span><span>성</span><span> </span>
+                <span>중</span><span>.</span><span>.</span><span>.</span>
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

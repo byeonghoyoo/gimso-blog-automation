@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+  "name": "블로그 AI 도우미_Ver1.7",
+  "version": "1.7",
+  "description": "블로그 글과 사용자 프롬프트를 결합하여 생성형 AI API로 텍스트 생성",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "downloads",
+    "bookmarks"
+  ],
+  "host_permissions": [
+    "https://blog.naver.com/*",
+    "https://chat.openai.com/*",
+    "https://chatgpt.com/*",
+    "https://search.naver.com/*",
+    "https://www.google.com/search*",
+    "https://www.google.co.kr/search*"
+
+
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  },
+  "icons": {
+    "16": "icon.png",
+    "32": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://search.naver.com/*",
+        "https://www.google.com/*",
+        "https://www.google.co.kr/*",
+        "https://m.search.naver.com/*",
+        "https://www.naver.com/*",
+        "https://m.naver.com/*",
+        "https://www.youtube.com/*",
+        "https://m.youtube.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
