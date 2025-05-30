@@ -1,10 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey =
-  process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
 
 if (!apiKey) {
-  console.warn('Google AI API key is not configured');
+  console.error('Google AI API key is not configured');
 }
 
 const genAI = new GoogleGenerativeAI(apiKey || '');
