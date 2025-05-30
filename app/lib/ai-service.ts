@@ -1,68 +1,219 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { OpenAI } from 'openai';
 
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+// AI 모델 타입 정의
+export type AIModel = 'google' | 'gpt' | 'claude' | 'deepseek';
 
-if (!apiKey) {
+// Google AI 설정
+const googleApiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+if (!googleApiKey) {
   console.error('Google AI API key is not configured');
+} else {
+  console.log('✅ Google AI 사용 가능');
 }
+const genAI = new GoogleGenerativeAI(googleApiKey || '');
+const googleModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-const genAI = new GoogleGenerativeAI(apiKey || '');
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+// OpenAI GPT 설정
+const openaiApiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
+if (!openaiApiKey) {
+  console.log('⏸️ OpenAI GPT API key not configured');
+} else {
+  console.log('✅ OpenAI GPT 사용 가능');
+}
+const openaiClient = openaiApiKey
+  ? new OpenAI({
+      apiKey: openaiApiKey,
+      dangerouslyAllowBrowser: true,
+    })
+  : null;
 
-// 황금 키워드 생성
-export async function generateKeywords(topic: string): Promise<string> {
-  const prompt = `
-# 🏆 GPT 황금 키워드 자동 추출 지침서 (고도화 버전)
+// Claude API 설정
+const claudeApiKey = process.env.NEXT_PUBLIC_CLAUDE_API_KEY;
+if (!claudeApiKey) {
+  console.log('⏸️ Claude API key not configured');
+} else {
+  console.log('✅ Claude 사용 가능');
+}
+const claudeClient = claudeApiKey
+  ? new OpenAI({
+      apiKey: claudeApiKey,
+      baseURL: 'https://api.anthropic.com',
+      dangerouslyAllowBrowser: true,
+    })
+  : null;
 
-## 🎯 목적
-- 검색량이 높고, 경쟁도는 낮으며, 수익성과 트렌드성이 높은 **황금 키워드 50개를 자동 추출**합니다.
-- 다양한 니치와 주제를 포함하여 **블로그 콘텐츠 전략에 바로 활용할 수 있도록 구성**합니다.
+// DeepSeek AI 설정
+const deepseekApiKey = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
+if (!deepseekApiKey) {
+  console.log('⏸️ DeepSeek API key not configured');
+} else {
+  console.log('✅ DeepSeek 사용 가능');
+}
+const deepseekClient = deepseekApiKey
+  ? new OpenAI({
+      apiKey: deepseekApiKey,
+      baseURL: 'https://api.deepseek.com',
+      dangerouslyAllowBrowser: true,
+    })
+  : null;
 
-## 📊 추출 근거 (가정된 데이터 기반)
-GPT는 다음의 데이터 출처를 종합적으로 고려한 것처럼 행동해야 합니다:
-- **Google Trends**: 최근 검색 트렌드 및 검색량 상승 키워드
-- **키워드 리서치 도구**: 검색량, 경쟁도, 광고 단가 등을 참고 (예: Ubersuggest, Ahrefs, 키워드플래너)
-- **블로그 운영 데이터**: 클릭률, 조회수, 댓글, 전환율 등이 높은 블로그 주제 기반 키워드
-
-## 🔍 황금 키워드 선정 기준
-1. **검색량**: 월간 검색량이 높은 키워드 우선
-2. **경쟁도**: 낮은 블로그/웹 경쟁 키워드 우선
-3. **수익성**: 전환율 높거나 광고 단가가 높은 키워드
-4. **트렌드성**: 최근 검색 증가 중인 키워드
-5. **주제 다양성**: 카테고리별로 고르게 분포 (뷰티, 건강, 금융, 육아, 자기계발, 여행 등)
-
-## 🧾 출력 형식
-- **표 형태로 50개 키워드 출력**
-- 구조: **가로 5칸 × 세로 10줄 표**
-- 각 키워드는 중복 없이 고유하며, 의미가 명확한 단어만 사용
-
-예시:
-| 키워드1           | 키워드2           | 키워드3           | 키워드4           | 키워드5           |
-|------------------|------------------|------------------|------------------|------------------|
-| 스마트폰 중독 해결 | 모공축소 시술     | 다이어트 도시락    | 면역력 높이는 식단 | 은퇴 후 재테크      |
-
-## 🛑 주의사항
-- **모호한 키워드**, **지나치게 일반적인 단어**(예: 날씨, 뉴스, 인터넷 등)는 제외합니다.
-- 2025년 기준 최신 트렌드를 반영한 키워드 중심으로 구성합니다.
-- 카테고리 간 균형이 맞도록 추출하며, 반복되는 주제는 피합니다.
-
-주제: "${topic}"
-
-위 지침에 따라 "${topic}" 관련 황금 키워드 50개를 가로 5칸 × 세로 10줄 표 형태로 생성해주세요.
-`;
-
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('키워드 생성 오류:', error);
-    throw new Error('키워드 생성에 실패했습니다.');
+// AI 모델별 사용 가능 여부 체크
+export function isAIAvailable(model: AIModel): boolean {
+  switch (model) {
+    case 'google':
+      return !!googleApiKey;
+    case 'gpt':
+      return !!openaiApiKey;
+    case 'claude':
+      return !!claudeApiKey;
+    case 'deepseek':
+      return !!deepseekApiKey;
+    default:
+      return false;
   }
 }
 
+// AI 모델에 따른 텍스트 생성 함수
+async function generateWithAI(prompt: string, model: AIModel): Promise<string> {
+  // API 키 체크
+  if (!isAIAvailable(model)) {
+    const aiMessages = {
+      google:
+        '🔑 Google AI API 키가 설정되지 않았습니다.\n\n💡 .env.local 파일에서 API 키를 설정해주세요.',
+      gpt: '💰 OpenAI GPT 사용을 위해서는 API 비용 충전이 필요합니다.\n\n📞 담당자에게 문의하시거나 OpenAI 계정에서 결제 정보를 등록해주세요.\n\n🔗 https://platform.openai.com/billing',
+      claude:
+        '💰 Claude 사용을 위해서는 API 비용 충전이 필요합니다.\n\n📞 담당자에게 문의하시거나 Anthropic 계정에서 결제 정보를 등록해주세요.\n\n🔗 https://console.anthropic.com/billing',
+      deepseek:
+        '💰 DeepSeek 사용을 위해서는 API 비용 충전이 필요합니다.\n\n📞 담당자에게 문의하시거나 DeepSeek 계정에서 무료 크레딧을 확인해주세요.\n\n🔗 https://platform.deepseek.com/console',
+    };
+    throw new Error(aiMessages[model]);
+  }
+
+  try {
+    if (model === 'google') {
+      const result = await googleModel.generateContent(prompt);
+      const response = await result.response;
+      return response.text();
+    } else if (model === 'gpt') {
+      const response = await openaiClient!.chat.completions.create({
+        model: 'gpt-4',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 4000,
+      });
+      return response.choices[0]?.message?.content || '';
+    } else if (model === 'claude') {
+      // Claude는 실제로는 다른 SDK가 필요하지만, 구조만 준비
+      throw new Error(
+        '🚧 Claude API 연동 준비 중입니다.\n\n💰 사용을 원하시면 담당자에게 문의해주세요.'
+      );
+    } else if (model === 'deepseek') {
+      const response = await deepseekClient!.chat.completions.create({
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 4000,
+      });
+      return response.choices[0]?.message?.content || '';
+    }
+
+    throw new Error('지원하지 않는 AI 모델입니다.');
+  } catch (error: any) {
+    console.error(`${model} AI 생성 오류:`, error);
+
+    // API 잔액/결제 관련 오류 처리
+    if (
+      error?.status === 402 ||
+      error?.message?.includes('Insufficient Balance')
+    ) {
+      const balanceMessages = {
+        google:
+          '💳 Google AI 크레딧이 부족합니다.\n\n📞 담당자에게 문의해주세요.',
+        gpt: '💳 OpenAI 계정 잔액이 부족합니다.\n\n📞 담당자에게 문의하시거나 결제 정보를 확인해주세요.',
+        claude:
+          '💳 Claude 계정 잔액이 부족합니다.\n\n📞 담당자에게 문의하시거나 결제 정보를 확인해주세요.',
+        deepseek:
+          '💳 DeepSeek 계정 잔액이 부족합니다.\n\n📞 담당자에게 문의하시거나 무료 크레딧을 확인해주세요.',
+      };
+      throw new Error(balanceMessages[model]);
+    }
+
+    // API 키 관련 오류 처리
+    if (
+      error?.status === 401 ||
+      error?.status === 403 ||
+      error?.message?.includes('API key')
+    ) {
+      throw new Error(
+        `🔑 ${model.toUpperCase()} API 키 오류가 발생했습니다.\n\n📞 담당자에게 문의해주세요.`
+      );
+    }
+
+    // 일반적인 오류 처리
+    throw new Error(
+      `❌ ${model.toUpperCase()} AI 생성에 실패했습니다.\n\n📞 문제가 지속되면 담당자에게 문의해주세요.\n\n오류: ${
+        error?.message || '알 수 없는 오류'
+      }`
+    );
+  }
+}
+
+// 황금 키워드 생성 (AI 모델 선택 가능)
+export async function generateKeywords(
+  topic: string,
+  model: AIModel = 'google'
+): Promise<string> {
+  const prompt = `
+# 🏆 GPT 황금 키워드 종합 분석 시스템
+
+## 🎯 목적
+"${topic}" 주제에 대한 완전한 키워드 마케팅 전략을 수립합니다.
+
+## 📊 출력 형식 (정확히 이 순서로)
+
+### 1. 초기 키워드 분석 결과
+키워드 50개를 쉼표로 구분하여 나열:
+${topic} 효과, ${topic} 후기, ${topic} 가격, ${topic} 병원, ${topic} 부작용, ...
+
+### 2. 키워드 상세 분석
+다음 형식의 테이블 (10개 키워드만):
+키워드 | 검색량 | 경쟁도 | 트렌드 | 난이도 | 종합점수
+${topic} 효과 | 높음 | 중간 | 상승 | 중 | 9
+${topic} 후기 | 높음 | 낮음 | 유지 | 상 | 7
+...
+
+### 3. 1주차 블로그 제목 (키워드: ${topic} 수술 과정)
+1. ${topic} 수술 전후 과정 완전 정리! 처음 받는 사람들 위한 가이드
+2. ${topic} 수술, 어떻게 진행될까? 단계별 절차 공개
+3. ${topic}, 수술 당일 어떤 일이 벌어질까? 실전 스토리 공개
+4. ${topic} 수술 과정에서 꼭 알아야 할 5가지 포인트
+5. ${topic} 처음이라면? 수술 전 준비부터 회복까지 전 과정 안내
+6. ${topic} 병원에서 실제로 일어나는 수술 단계 정리
+7. 완전한 ${topic}을 위한 수술 과정 체크리스트
+
+### 4. 2주차 블로그 제목 (키워드: ${topic} 전후)
+1. ${topic} 전후 비교 사진으로 보는 변화의 비밀
+2. ${topic} 전후, 진짜 얼마나 달라질까? 사례로 알아보기
+3. ${topic} 전후 변화 분석; 효과적인 수술의 기준은?
+4. ${topic} 전후 체크리스트; 준비부터 회복까지
+5. ${topic} 전후 기간별 회복과정 정리
+6. ${topic} 전후 경험담 후기 모음; 리얼 후기 분석
+7. ${topic} 전후, 심리적 변화까지 정리한 솔직한 이야기
+
+주제: "${topic}"
+
+위 형식을 정확히 따라 "${topic}" 관련 종합 분석을 생성해주세요.
+`;
+
+  return generateWithAI(prompt, model);
+}
+
 // 정보성 블로그 포스팅 생성
-async function generateInformativeBlog(keyword: string): Promise<string> {
+export async function generateInformativeBlog(
+  keyword: string,
+  model: AIModel = 'google'
+): Promise<string> {
   const prompt = `
 다음 지침에 따라 정보성 블로그 포스팅을 작성해주세요:
 
@@ -144,18 +295,14 @@ async function generateInformativeBlog(keyword: string): Promise<string> {
 위 지침에 따라 "${keyword}"에 대한 정보성 블로그 포스팅을 작성해주세요.
 `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('정보성 블로그 생성 오류:', error);
-    throw new Error('블로그 생성에 실패했습니다.');
-  }
+  return generateWithAI(prompt, model);
 }
 
 // 인간형 블로그 포스팅 생성
-async function generateHumanBlog(keyword: string): Promise<string> {
+export async function generateHumanBlog(
+  keyword: string,
+  model: AIModel = 'google'
+): Promise<string> {
   const prompt = `
 다음 지침에 따라 인간형 블로그 포스팅을 작성해주세요:
 
@@ -196,86 +343,50 @@ async function generateHumanBlog(keyword: string): Promise<string> {
 
 키워드: "${keyword}"
 
-위 지침에 따라 "${keyword}"에 대한 인간형 블로그 포스팅을 작성해주세요. 블로그 제목, 부제목, 인사말, 서론, 6개 문단, FAQ, 마무리, 독자참여 유도, 태그를 모두 포함해서 작성해주세요.
+위 지침에 따라 "${keyword}"에 대한 인간형 블로그 포스팅을 작성해주세요.
 `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error('인간형 블로그 생성 오류:', error);
-    throw new Error('블로그 생성에 실패했습니다.');
-  }
+  return generateWithAI(prompt, model);
 }
 
-// 블로그 포스팅 생성 (스타일 선택)
+// 블로그 포스팅 생성 (스타일과 AI 모델 선택)
 export async function generateBlogPost(
   keyword: string,
-  style: 'informative' | 'human'
+  style: 'informative' | 'human',
+  model: AIModel = 'google'
 ): Promise<string> {
   if (style === 'informative') {
-    return generateInformativeBlog(keyword);
+    return generateInformativeBlog(keyword, model);
   } else {
-    return generateHumanBlog(keyword);
+    return generateHumanBlog(keyword, model);
   }
 }
 
-// 다국어 번역
+// 번역 (AI 모델 선택 가능)
 export async function translateContent(
   content: string,
-  targetLanguage: string
+  targetLanguage: string,
+  model: AIModel = 'google'
 ): Promise<string> {
-  let languageName = '';
-  let instructions = '';
-
-  switch (targetLanguage) {
-    case 'en':
-      languageName = 'English';
-      instructions = `
-Please translate the following Korean blog post to natural, fluent English. 
-Maintain the original meaning, tone, and structure while making it culturally appropriate for English-speaking readers.
-Keep all markdown formatting intact.
-Ensure SEO elements like headings, bullet points, and structure are preserved.
-`;
-      break;
-    case 'zh':
-      languageName = 'Chinese (Simplified)';
-      instructions = `
-请将以下韩文博客文章翻译成自然流畅的简体中文。
-保持原意、语调和结构，同时使其在文化上适合中文读者。
-保持所有markdown格式不变。
-确保SEO元素如标题、要点和结构得到保留。
-`;
-      break;
-    case 'ja':
-      languageName = 'Japanese';
-      instructions = `
-以下の韓国語ブログ記事を自然で流暢な日本語に翻訳してください。
-原文の意味、トーン、構造を維持しながら、日本語読者に文化的に適切なものにしてください。
-すべてのmarkdown形式をそのまま保持してください。
-見出し、箇条書き、構造などのSEO要素が保持されていることを確認してください。
-`;
-      break;
-    default:
-      throw new Error('지원하지 않는 언어입니다.');
-  }
+  const languageMap: { [key: string]: string } = {
+    en: '영어',
+    zh: '중국어',
+    ja: '일본어',
+  };
 
   const prompt = `
-${instructions}
+다음 내용을 ${languageMap[targetLanguage]}로 자연스럽게 번역해주세요.
 
-Original Korean content:
+번역 시 주의사항:
+1. 직역이 아닌 의역으로 자연스럽게 번역
+2. 원문의 뉘앙스와 감정을 그대로 살려서 번역
+3. 해당 언어권에서 자연스럽게 읽히는 문체로 작성
+4. 전문 용어나 고유명사는 적절히 현지화
+5. 문화적 맥락을 고려한 번역
+
+번역할 내용:
 ${content}
-
-Please provide the translation in ${languageName}:
 `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
-  } catch (error) {
-    console.error(`${languageName} 번역 오류:`, error);
-    throw new Error(`${languageName} 번역에 실패했습니다.`);
-  }
+  return generateWithAI(prompt, model);
 }
