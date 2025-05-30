@@ -233,12 +233,10 @@ export default function Home() {
     const analysis = parseKeywordAnalysis(analysisText);
 
     return (
-      <div className="space-y-6">
+      <div className="keyword-analysis-container">
         {/* 1. 초기 키워드 분석 결과 */}
-        <div className="bg-white p-6 rounded-lg border">
-          <h3 className="text-lg font-bold mb-4 text-gray-800">
-            📊 초기 키워드 분석 결과
-          </h3>
+        <div className="keyword-analysis-section">
+          <h3>📊 초기 키워드 분석 결과</h3>
           {analysis.keywords && (
             <div className="excel-style-grid">
               <div className="grid-header">
@@ -277,32 +275,18 @@ export default function Home() {
 
         {/* 2. 키워드 상세 분석 */}
         {analysis.detailAnalysis.length > 0 && (
-          <div className="bg-white p-6 rounded-lg border">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              🔍 키워드 상세 분석
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse border border-gray-300">
+          <div className="keyword-analysis-section">
+            <h3>🔍 키워드 상세 분석</h3>
+            <div className="keyword-detail-table">
+              <table>
                 <thead>
-                  <tr className="bg-blue-500 text-white">
-                    <th className="border border-gray-300 px-4 py-3 text-left">
-                      키워드
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center">
-                      검색량
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center">
-                      경쟁도
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center">
-                      트렌드
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center">
-                      난이도
-                    </th>
-                    <th className="border border-gray-300 px-4 py-3 text-center">
-                      종합점수
-                    </th>
+                  <tr>
+                    <th>키워드</th>
+                    <th>검색량</th>
+                    <th>경쟁도</th>
+                    <th>트렌드</th>
+                    <th>난이도</th>
+                    <th>종합점수</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -311,24 +295,14 @@ export default function Home() {
                       key={index}
                       className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}
                     >
-                      <td className="border border-gray-300 px-4 py-3 font-medium">
+                      <td className="font-medium text-left px-2">
                         {item.keyword}
                       </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        {item.searchVolume}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        {item.competition}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        {item.trend}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center">
-                        {item.difficulty}
-                      </td>
-                      <td className="border border-gray-300 px-4 py-3 text-center font-bold text-blue-600">
-                        {item.score}
-                      </td>
+                      <td>{item.searchVolume}</td>
+                      <td>{item.competition}</td>
+                      <td>{item.trend}</td>
+                      <td>{item.difficulty}</td>
+                      <td className="font-bold text-blue-600">{item.score}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -339,20 +313,18 @@ export default function Home() {
 
         {/* 3. 1주차 블로그 제목 */}
         {analysis.week1Titles.length > 0 && (
-          <div className="bg-white p-6 rounded-lg border">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              📝 1주차 블로그 제목
-            </h3>
-            <ul className="space-y-2">
+          <div className="keyword-analysis-section">
+            <h3>📝 1주차 블로그 제목</h3>
+            <ul className="blog-titles-list space-y-1">
               {analysis.week1Titles.map((title, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded"
+                  className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded"
                 >
-                  <span className="bg-blue-500 text-white px-2 py-1 rounded text-sm font-bold min-w-[24px] text-center">
+                  <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs font-bold min-w-[20px] text-center flex-shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-gray-700">{title}</span>
+                  <span className="text-gray-700 text-sm">{title}</span>
                 </li>
               ))}
             </ul>
@@ -361,20 +333,18 @@ export default function Home() {
 
         {/* 4. 2주차 블로그 제목 */}
         {analysis.week2Titles.length > 0 && (
-          <div className="bg-white p-6 rounded-lg border">
-            <h3 className="text-lg font-bold mb-4 text-gray-800">
-              📝 2주차 블로그 제목
-            </h3>
-            <ul className="space-y-2">
+          <div className="keyword-analysis-section">
+            <h3>📝 2주차 블로그 제목</h3>
+            <ul className="blog-titles-list space-y-1">
               {analysis.week2Titles.map((title, index) => (
                 <li
                   key={index}
-                  className="flex items-start gap-3 p-2 hover:bg-gray-50 rounded"
+                  className="flex items-start gap-2 p-2 hover:bg-gray-50 rounded"
                 >
-                  <span className="bg-green-500 text-white px-2 py-1 rounded text-sm font-bold min-w-[24px] text-center">
+                  <span className="bg-green-500 text-white px-2 py-1 rounded text-xs font-bold min-w-[20px] text-center flex-shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-gray-700">{title}</span>
+                  <span className="text-gray-700 text-sm">{title}</span>
                 </li>
               ))}
             </ul>
@@ -684,18 +654,17 @@ export default function Home() {
                     value={translationContent}
                     onChange={(e) => setTranslationContent(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter' && e.ctrlKey) {
+                      if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
                         handleTranslate();
                       }
                     }}
-                    placeholder="번역할 텍스트를 입력하세요... (Ctrl+엔터로 바로 번역)"
+                    placeholder="번역할 텍스트를 입력하세요... (엔터키로 바로 번역, Shift+엔터로 줄바꿈)"
                     className="textarea-field"
                     rows={6}
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    💡 팁: Ctrl+엔터키를 누르면 바로 번역됩니다 (엔터키는
-                    줄바꿈)
+                    💡 팁: 엔터키로 바로 번역, Shift+엔터키로 줄바꿈
                   </p>
                 </div>
 
@@ -727,7 +696,7 @@ export default function Home() {
 
       {/* 결과 프리뷰 영역 */}
       {(results.keywords || results.blog || results.translation) && (
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="results-grid">
           {/* 키워드 결과 */}
           {results.keywords && (
             <div className="resizable-panel">

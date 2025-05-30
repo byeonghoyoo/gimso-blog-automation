@@ -35,13 +35,8 @@ if (!claudeApiKey) {
 } else {
   console.log('✅ Claude 사용 가능');
 }
-const claudeClient = claudeApiKey
-  ? new OpenAI({
-      apiKey: claudeApiKey,
-      baseURL: 'https://api.anthropic.com',
-      dangerouslyAllowBrowser: true,
-    })
-  : null;
+// Claude는 현재 구현되지 않음 (Anthropic SDK 필요)
+const claudeClient = null;
 
 // DeepSeek AI 설정
 const deepseekApiKey = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
@@ -74,6 +69,53 @@ export function isAIAvailable(model: AIModel): boolean {
   }
 }
 
+// Google AI 생성
+async function generateWithGoogle(prompt: string): Promise<string> {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Google AI API 키가 설정되지 않았습니다.');
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
+    if (!text) {
+      throw new Error('Google AI에서 응답을 받지 못했습니다.');
+    }
+
+    return cleanAIResponse(text);
+  } catch (error: any) {
+    console.error('Google AI 오류:', error);
+
+    if (error.message?.includes('API key')) {
+      throw new Error(
+        '🔑 Google AI API 키가 올바르지 않습니다. 설정을 확인해주세요.'
+      );
+    }
+
+    if (error.message?.includes('quota') || error.message?.includes('limit')) {
+      throw new Error(
+        '📊 Google AI 사용량 한도에 도달했습니다. 잠시 후 다시 시도해주세요.'
+      );
+    }
+
+    if (error.message?.includes('safety')) {
+      throw new Error(
+        '🚫 Google AI 안전 정책에 의해 차단된 요청입니다. 다른 키워드로 시도해주세요.'
+      );
+    }
+
+    throw new Error(
+      `Google AI 오류: ${error.message || '알 수 없는 오류가 발생했습니다.'}`
+    );
+  }
+}
+
 // AI 모델에 따른 텍스트 생성 함수
 async function generateWithAI(prompt: string, model: AIModel): Promise<string> {
   // API 키 체크
@@ -92,30 +134,38 @@ async function generateWithAI(prompt: string, model: AIModel): Promise<string> {
 
   try {
     if (model === 'google') {
-      const result = await googleModel.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return generateWithGoogle(prompt);
     } else if (model === 'gpt') {
       const response = await openaiClient!.chat.completions.create({
         model: 'gpt-4',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
         max_tokens: 4000,
+        temperature: 0.7,
       });
-      return response.choices[0]?.message?.content || '';
+
+      const text = response.choices[0]?.message?.content;
+      if (!text) {
+        throw new Error('OpenAI에서 응답을 받지 못했습니다.');
+      }
+      return cleanAIResponse(text);
     } else if (model === 'claude') {
-      // Claude는 실제로는 다른 SDK가 필요하지만, 구조만 준비
+      // Claude는 현재 사용할 수 없습니다 (구현 필요)
       throw new Error(
-        '🚧 Claude API 연동 준비 중입니다.\n\n💰 사용을 원하시면 담당자에게 문의해주세요.'
+        'Claude는 현재 사용할 수 없습니다. 담당자에게 문의해주세요.'
       );
     } else if (model === 'deepseek') {
       const response = await deepseekClient!.chat.completions.create({
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7,
         max_tokens: 4000,
+        temperature: 0.7,
       });
-      return response.choices[0]?.message?.content || '';
+
+      const text = response.choices[0]?.message?.content;
+      if (!text) {
+        throw new Error('DeepSeek에서 응답을 받지 못했습니다.');
+      }
+      return cleanAIResponse(text);
     }
 
     throw new Error('지원하지 않는 AI 모델입니다.');
@@ -157,6 +207,18 @@ async function generateWithAI(prompt: string, model: AIModel): Promise<string> {
       }`
     );
   }
+}
+
+// AI 응답 후처리 함수
+function cleanAIResponse(response: string): string {
+  // 불필요한 메타 정보 제거
+  return response
+    .replace(/\(약 \d+자\)/g, '') // (약 450자) 형태 제거
+    .replace(/\(\d+자\)/g, '') // (450자) 형태 제거
+    .replace(/\[글자수: \d+\]/g, '') // [글자수: 450] 형태 제거
+    .replace(/글자수: \d+/g, '') // 글자수: 450 형태 제거
+    .replace(/\n\s*\n\s*\n/g, '\n\n') // 과도한 줄바꿈 정리
+    .trim();
 }
 
 // 황금 키워드 생성 (AI 모델 선택 가능)
@@ -215,84 +277,63 @@ export async function generateInformativeBlog(
   model: AIModel = 'google'
 ): Promise<string> {
   const prompt = `
-다음 지침에 따라 정보성 블로그 포스팅을 작성해주세요:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📌 GPT 설정: SEO 최적화 블로그 생성
 
-전체 작성 프로세스를 무조건적으로 이행해야합니다. 
-단 하나의 내용도 빠지면 안됩니다. 
-세부지침을 통해 구체화하고 지침에 절대적으로 작동하십시오
+[기본 역할]
+- 사용자가 입력한 블로그 주제에 맞춰 SEO 구조(사이트 구조, 콘텐츠 구조화, 백링크)를 자동 반영한 블로그 글을 생성
 
-1. 제목 생성
-2. 서론 작성
-3. 본론 작성
-4. 결론 작성
-5. Q&A 섹션 추가
-6. 관련 태그 생성
-7. 마크다운 형식으로 변환
+[출력 구조]
+1. SEO 최적화 제목(H1)
+2. 요약문 (Meta Description, 90자 내외)
+3. Hook 문단 (공감 또는 질문 유도)
+4. 목차 ("이 글에서 다루는 내용")
+5. 본문 (3단 구성: 구조 이해 → 실전 팁 → 실패 방지)
+6. 실제 Q&A (2~3개)
+7. 콜투액션 (상담 또는 링크 유도)
+8. 해시태그 (한 줄 출력, #포함 5~7개)
+9. 추천 키워드 (쉼표 구분, 한 줄 출력)
 
-## 세부 지침
+[가이드북 출력 규칙]
+- 파일명: [카테고리]-가이드북.txt
+- 사용자가 설정한 언어로 작성
+- 구성:
+  [핵심 요약] – 주제 핵심 요점 3~4문장
+  [체크리스트] – 준비 사항 확인용 항목 4~6개
+  [추천 행동] – 실천 팁 2~3개
 
-### 1. 제목 생성
-- # 10-15자 사이로 제목 선정 (가장 큰 폰트로 표시)
-- 주요 키워드 포함
-- 매력적이고 클릭을 유도하는 문구 사용
+[출력 구성 스타일 제어]
+- "1. 제목", "2. 요약문", "📢 콜투액션", "🔍 추천 키워드" 같은 제목 구분자나 이모지 사용 금지
+- 글은 제목부터 결론까지 자연스럽게 이어지며, 복사 후 블로그에 바로 붙여넣기 가능해야 함
+- 해시태그는 본문 맨 아래 줄에 출력 (# 포함, 한 줄)
+- 추천 키워드는 해시태그 바로 아래 줄에 쉼표로 구분해 출력 (제목 없이)
 
-### 2. 서론 작성 (전체 글의 약 15%)
-- 주제 소개 및 독자의 관심 유도
-- 핵심 키워드 자연스럽게 포함
-- 글의 개요 간단히 제시
+[출력 예시 포맷]
+자려한코 성형, 자연스러운 아름다움을 되찾는 방법  
+자려한코 성형은 부자연스러운 코 라인을 개선해 자연스러운 얼굴 균형을 되찾는 솔루션입니다.
 
-### 3. 본론 작성 (전체 글의 약 70%)
-- 주요 논점을 2-4개의 소제목으로 구분
-- 각 소제목 아래 더 상세한 내용을 구조화
-- 논리적 흐름과 단계적 정보 제공
-- 관련 이미지, 인포그래픽, 비디오 등 멀티미디어 요소 포함
+(본문 생략)
 
-### 4. 결론 작성 (전체 글의 약 15%)
-- 주요 내용 요약
-- 독자에게 행동 촉구 (CTA) 포함
-- 추가 정보나 다음 단계 제시
+이제는 인위적인 코보다 자연스럽고 조화로운 코가 대세입니다.  
+자려한코 성형으로 당신의 얼굴에 진짜 어울리는 아름다움을 찾아보세요.
 
-### 5. Q&A 섹션 추가
-- 주제와 관련된 3-5개의 자주 묻는 질문(FAQ) 포함
-- 실제 독자들이 궁금해할 만한 질문 선정 (키워드 연구 활용)
-- 간결하고 명확한 답변 제공
+#자려한코 #코재수술 #자연스러운코 #코성형추천 #얼굴조화 #자가조직성형  
+자려한코, 코성형, 코재수술, 자연스러운코, 성형외과추천, 실리콘제거, 자가조직이식, 귀연골성형, 비중격지지
 
-### 6. 관련 태그 생성
-- 글의 주제와 직접적으로 연관된 5-7개의 태그 생성
-- 주요 키워드와 관련 키워드를 태그로 활용
-- 일관된 태그 형식 사용 (예: 모두 소문자, 띄어쓰기는 하이픈(-) 사용)
+[출력 스타일 최적화 – 사람처럼 보이게]
+- 반복되는 표현(예: "깊은 맛", "자연스러운 결과")은 유사 표현으로 다양화
+- 3줄 이내의 문장과 1줄짜리 단문을 교차 사용해 리듬감 있는 글 구성
+- 실제로 있었던 경험담, 질문, 실사용 후기 등을 섞어 인간적인 톤 유지
+  예: "이 질문 정말 많이 받아요!" / "처음 해봤을 땐 저도 실패했어요."
+- SEO 키워드는 흐름 속에 자연스럽게 녹여 삽입하고, 나열하지 않는다
+- 전형적인 구조는 피하고, 구성 순서를 유연하게 재배치해도 좋음
+- 전체 어조는 '친절한 블로거가 말하는 듯한 자연스러운 글'로 구성
 
-### 7. 마크다운 형식으로 변환
-- 제목은 '#', '##', '###' 등으로 표시
-- 목록은 '-' 또는 '1.', '2.' 등으로 표시
-- 강조가 필요한 부분은 '*' 또는 '**'로 감싸 이탤릭체나 볼드체로 만듦
-- 코드 블록이 필요한 경우 백틱 3개로 감싸줌
-
-## 추가 고려사항
-
-### 글자 수 및 형식
-- 총 글자 수: 3,500자 이상 4,500자 이하 (공백 포함, 한글 기준)
-- 단락: 2-3문장으로 구성 (최대 5문장)
-
-### 인간적인 글쓰기 및 감정 표현
-- 개인적인 경험이나 일화 공유
-- 비유와 은유를 사용하여 복잡한 개념 설명
-- 다양한 문장 구조와 길이 사용
-- 대화체나 질문형 문장 사용으로 독자와 소통하는 듯한 느낌 전달
-- 감정을 나타내는 형용사와 부사 적절히 사용
-- 개인적인 의견이나 견해 표현 (예: "내 경험상...", "개인적으로 생각하기에...")
-- 유머나 재치 있는 표현 적절히 사용
-- 독자의 감정에 호소하는 문구 사용 (예: "여러분도 이런 경험 있으시죠?")
-
-### 이모지 사용 가이드
-- 주요 섹션 제목 앞에 관련 이모지 사용 (예: 📌 주요 포인트, 💡 팁, 🔑 핵심 정보)
-- 글의 흐름을 방해하지 않도록 적절히 사용 (과도한 사용 지양)
-- 목록이나 중요 포인트를 강조할 때 사용 (예: ✅ 체크리스트, 🚫 주의사항)
-- 독자층과 주제에 맞는 이모지 선택 (전문적인 주제라면 이모지 사용 최소화)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 키워드: "${keyword}"
 
-위 지침에 따라 "${keyword}"에 대한 정보성 블로그 포스팅을 작성해주세요.
+위 지침에 따라 "${keyword}"에 대한 SEO 최적화 정보성 블로그 포스팅을 작성해주세요.
 `;
 
   return generateWithAI(prompt, model);
