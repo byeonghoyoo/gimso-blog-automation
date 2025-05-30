@@ -54,7 +54,7 @@
   }
 
   .prose-custom {
-    @apply prose prose-gray max-w-none;
+    @apply max-w-none;
   }
 
   .prose-custom h1 {
