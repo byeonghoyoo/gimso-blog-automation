@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Check, ChevronRight, Sparkles, Globe, FileText } from 'lucide-react';
 import KeywordGenerator from './components/KeywordGenerator';
 import BlogGenerator from './components/BlogGenerator';
