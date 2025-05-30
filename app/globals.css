@@ -182,10 +182,40 @@
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   background: white;
+  /* 텍스트 오버플로우 처리 */
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .resizable-panel:hover {
   border-color: #3b82f6;
+}
+
+/* 결과 패널 내부 텍스트 스타일링 */
+.resizable-panel pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  font-family: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.resizable-panel p {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.resizable-panel div {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* 리사이징 핸들 스타일링 */
