@@ -1,13 +1,14 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY
+const apiKey =
+  process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY || process.env.GOOGLE_AI_API_KEY;
 
 if (!apiKey) {
-  console.warn('Google AI API key is not configured')
+  console.warn('Google AI API key is not configured');
 }
 
-const genAI = new GoogleGenerativeAI(apiKey || '')
-const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+const genAI = new GoogleGenerativeAI(apiKey || '');
+const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
 // 황금 키워드 생성
 export async function generateKeywords(topic: string): Promise<string> {
@@ -49,15 +50,15 @@ GPT는 다음의 데이터 출처를 종합적으로 고려한 것처럼 행동�
 주제: "${topic}"
 
 위 지침에 따라 "${topic}" 관련 황금 키워드 50개를 가로 5칸 × 세로 10줄 표 형태로 생성해주세요.
-`
+`;
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    return response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error('키워드 생성 오류:', error)
-    throw new Error('키워드 생성에 실패했습니다.')
+    console.error('키워드 생성 오류:', error);
+    throw new Error('키워드 생성에 실패했습니다.');
   }
 }
 
@@ -115,7 +116,7 @@ async function generateInformativeBlog(keyword: string): Promise<string> {
 - 제목은 '#', '##', '###' 등으로 표시
 - 목록은 '-' 또는 '1.', '2.' 등으로 표시
 - 강조가 필요한 부분은 '*' 또는 '**'로 감싸 이탤릭체나 볼드체로 만듦
-- 코드 블록이 필요한 경우 '```'로 감싸줌
+- 코드 블록이 필요한 경우 백틱 3개로 감싸줌
 
 ## 추가 고려사항
 
@@ -142,15 +143,15 @@ async function generateInformativeBlog(keyword: string): Promise<string> {
 키워드: "${keyword}"
 
 위 지침에 따라 "${keyword}"에 대한 정보성 블로그 포스팅을 작성해주세요.
-`
+`;
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    return response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error('정보성 블로그 생성 오류:', error)
-    throw new Error('블로그 생성에 실패했습니다.')
+    console.error('정보성 블로그 생성 오류:', error);
+    throw new Error('블로그 생성에 실패했습니다.');
   }
 }
 
@@ -197,62 +198,68 @@ async function generateHumanBlog(keyword: string): Promise<string> {
 키워드: "${keyword}"
 
 위 지침에 따라 "${keyword}"에 대한 인간형 블로그 포스팅을 작성해주세요. 블로그 제목, 부제목, 인사말, 서론, 6개 문단, FAQ, 마무리, 독자참여 유도, 태그를 모두 포함해서 작성해주세요.
-`
+`;
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    return response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error('인간형 블로그 생성 오류:', error)
-    throw new Error('블로그 생성에 실패했습니다.')
+    console.error('인간형 블로그 생성 오류:', error);
+    throw new Error('블로그 생성에 실패했습니다.');
   }
 }
 
 // 블로그 포스팅 생성 (스타일 선택)
-export async function generateBlogPost(keyword: string, style: 'informative' | 'human'): Promise<string> {
+export async function generateBlogPost(
+  keyword: string,
+  style: 'informative' | 'human'
+): Promise<string> {
   if (style === 'informative') {
-    return generateInformativeBlog(keyword)
+    return generateInformativeBlog(keyword);
   } else {
-    return generateHumanBlog(keyword)
+    return generateHumanBlog(keyword);
   }
 }
 
 // 다국어 번역
-export async function translateContent(content: string, targetLanguage: string): Promise<string> {
-  let languageName = ''
-  let instructions = ''
+export async function translateContent(
+  content: string,
+  targetLanguage: string
+): Promise<string> {
+  let languageName = '';
+  let instructions = '';
 
   switch (targetLanguage) {
     case 'en':
-      languageName = 'English'
+      languageName = 'English';
       instructions = `
 Please translate the following Korean blog post to natural, fluent English. 
 Maintain the original meaning, tone, and structure while making it culturally appropriate for English-speaking readers.
 Keep all markdown formatting intact.
 Ensure SEO elements like headings, bullet points, and structure are preserved.
-`
-      break
+`;
+      break;
     case 'zh':
-      languageName = 'Chinese (Simplified)'
+      languageName = 'Chinese (Simplified)';
       instructions = `
 请将以下韩文博客文章翻译成自然流畅的简体中文。
 保持原意、语调和结构，同时使其在文化上适合中文读者。
 保持所有markdown格式不变。
 确保SEO元素如标题、要点和结构得到保留。
-`
-      break
+`;
+      break;
     case 'ja':
-      languageName = 'Japanese'
+      languageName = 'Japanese';
       instructions = `
 以下の韓国語ブログ記事を自然で流暢な日本語に翻訳してください。
 原文の意味、トーン、構造を維持しながら、日本語読者に文化的に適切なものにしてください。
 すべてのmarkdown形式をそのまま保持してください。
 見出し、箇条書き、構造などのSEO要素が保持されていることを確認してください。
-`
-      break
+`;
+      break;
     default:
-      throw new Error('지원하지 않는 언어입니다.')
+      throw new Error('지원하지 않는 언어입니다.');
   }
 
   const prompt = `
@@ -262,14 +269,14 @@ Original Korean content:
 ${content}
 
 Please provide the translation in ${languageName}:
-`
+`;
 
   try {
-    const result = await model.generateContent(prompt)
-    const response = await result.response
-    return response.text()
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error(`${languageName} 번역 오류:`, error)
-    throw new Error(`${languageName} 번역에 실패했습니다.`)
+    console.error(`${languageName} 번역 오류:`, error);
+    throw new Error(`${languageName} 번역에 실패했습니다.`);
   }
-} 
+}
